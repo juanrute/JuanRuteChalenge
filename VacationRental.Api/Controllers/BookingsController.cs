@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using Microsoft.AspNetCore.Mvc;
 using VacationRental.Api.Models;
+using VacationRental.Api.Domain;
 
 namespace VacationRental.Api.Controllers
 {
@@ -11,6 +12,7 @@ namespace VacationRental.Api.Controllers
     {
         private readonly IDictionary<int, RentalViewModel> _rentals;
         private readonly IDictionary<int, BookingViewModel> _bookings;
+        private Booking _bookingDomain;
 
         public BookingsController(
             IDictionary<int, RentalViewModel> rentals,
@@ -18,6 +20,7 @@ namespace VacationRental.Api.Controllers
         {
             _rentals = rentals;
             _bookings = bookings;
+            _bookingDomain = new Booking();
         }
 
         [HttpGet]
@@ -38,44 +41,10 @@ namespace VacationRental.Api.Controllers
             if (!_rentals.ContainsKey(bookingRequest.RentalId))
                 throw new ApplicationException("Rental not found");
 
-            CheckAvailability(bookingRequest);
 
-            return CreateNewBooking(bookingRequest);
-        }
+            _bookingDomain.CheckAvailability(bookingRequest, _bookings, _rentals[bookingRequest.RentalId].Units);
 
-        private ResourceIdViewModel CreateNewBooking(BookingBindingModel bookingRequest)
-        {
-            var key = new ResourceIdViewModel { Id = _bookings.Keys.Count + 1 };
-
-            _bookings.Add(key.Id, new BookingViewModel
-            {
-                Id = key.Id,
-                Nights = bookingRequest.Nights,
-                RentalId = bookingRequest.RentalId,
-                Start = bookingRequest.Start.Date
-            });
-
-            return key;
-        }
-
-        private void CheckAvailability(BookingBindingModel bookingRequest)
-        {
-            for (var i = 0; i < bookingRequest.Nights; i++)
-            {
-                var usedUnits = 0;
-                foreach (var booking in _bookings.Values)
-                {
-                    if (booking.RentalId == bookingRequest.RentalId
-                        && (booking.Start <= bookingRequest.Start.Date && booking.Start.AddDays(booking.Nights) > bookingRequest.Start.Date)
-                        || (booking.Start < bookingRequest.Start.AddDays(bookingRequest.Nights) && booking.Start.AddDays(booking.Nights) >= bookingRequest.Start.AddDays(bookingRequest.Nights))
-                        || (booking.Start > bookingRequest.Start && booking.Start.AddDays(booking.Nights) < bookingRequest.Start.AddDays(bookingRequest.Nights)))
-                    {
-                        usedUnits++;
-                    }
-                }
-                if (usedUnits >= _rentals[bookingRequest.RentalId].Units)
-                    throw new ApplicationException("Not available");
-            }
+            return _bookingDomain.CreateNewBooking(bookingRequest, _bookings);
         }
     }
 }
