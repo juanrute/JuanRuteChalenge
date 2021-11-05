@@ -34,7 +34,8 @@ namespace VacationRental.Api.Controllers
             _rentals.Add(key.Id, new RentalViewModel
             {
                 Id = key.Id,
-                Units = rentalRequest.Units
+                Units = rentalRequest.Units,
+                PreparationTimeInDays = rentalRequest.PreparationTimeInDays
             });
 
             return key;

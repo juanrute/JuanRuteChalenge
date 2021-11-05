@@ -35,36 +35,5 @@ namespace VacationRental.Api.Domain
 
             return resultCalendar;
         }
-
-        internal CalendarViewModel BetterCreateCalendarResponse(int rentalId, DateTime start, int nights, IDictionary<int, BookingViewModel> bookings)
-        {
-            List<CalendarDateViewModel> dates = new List<CalendarDateViewModel>();
-            bookings.Where(book => book.Value.Id == rentalId).ToList().ForEach(booking => {
-
-                for (var i = 0; i < nights; i++)
-                {
-                    var date = new CalendarDateViewModel
-                    {
-                        Date = start.Date.AddDays(i),
-                        Bookings = new List<CalendarBookingViewModel>()
-                    };
-
-                    if (booking.Value.Start.AddDays(booking.Value.Nights) > date.Date && booking.Value.Start <= date.Date)
-                    {
-                        date.Bookings.Add(new CalendarBookingViewModel { Id = booking.Value.Id });
-                    }
-
-
-                    dates.Add(date);
-                }
-
-                
-            });
-            return new CalendarViewModel
-            {
-                RentalId = rentalId,
-                Dates = dates
-            };
-        }
     }
 }
