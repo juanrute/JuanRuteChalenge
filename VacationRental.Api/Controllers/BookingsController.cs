@@ -31,42 +31,51 @@ namespace VacationRental.Api.Controllers
         }
 
         [HttpPost]
-        public ResourceIdViewModel Post(BookingBindingModel model)
+        public ResourceIdViewModel Post(BookingBindingModel bookingRequest)
         {
-            if (model.Nights <= 0)
+            if (bookingRequest.Nights <= 0)
                 throw new ApplicationException("Nigts must be positive");
-            if (!_rentals.ContainsKey(model.RentalId))
+            if (!_rentals.ContainsKey(bookingRequest.RentalId))
                 throw new ApplicationException("Rental not found");
 
-            for (var i = 0; i < model.Nights; i++)
-            {
-                var count = 0;
-                foreach (var booking in _bookings.Values)
-                {
-                    if (booking.RentalId == model.RentalId
-                        && (booking.Start <= model.Start.Date && booking.Start.AddDays(booking.Nights) > model.Start.Date)
-                        || (booking.Start < model.Start.AddDays(model.Nights) && booking.Start.AddDays(booking.Nights) >= model.Start.AddDays(model.Nights))
-                        || (booking.Start > model.Start && booking.Start.AddDays(booking.Nights) < model.Start.AddDays(model.Nights)))
-                    {
-                        count++;
-                    }
-                }
-                if (count >= _rentals[model.RentalId].Units)
-                    throw new ApplicationException("Not available");
-            }
+            CheckAvailability(bookingRequest);
 
+            return CreateNewBooking(bookingRequest);
+        }
 
+        private ResourceIdViewModel CreateNewBooking(BookingBindingModel bookingRequest)
+        {
             var key = new ResourceIdViewModel { Id = _bookings.Keys.Count + 1 };
 
             _bookings.Add(key.Id, new BookingViewModel
             {
                 Id = key.Id,
-                Nights = model.Nights,
-                RentalId = model.RentalId,
-                Start = model.Start.Date
+                Nights = bookingRequest.Nights,
+                RentalId = bookingRequest.RentalId,
+                Start = bookingRequest.Start.Date
             });
 
             return key;
+        }
+
+        private void CheckAvailability(BookingBindingModel bookingRequest)
+        {
+            for (var i = 0; i < bookingRequest.Nights; i++)
+            {
+                var usedUnits = 0;
+                foreach (var booking in _bookings.Values)
+                {
+                    if (booking.RentalId == bookingRequest.RentalId
+                        && (booking.Start <= bookingRequest.Start.Date && booking.Start.AddDays(booking.Nights) > bookingRequest.Start.Date)
+                        || (booking.Start < bookingRequest.Start.AddDays(bookingRequest.Nights) && booking.Start.AddDays(booking.Nights) >= bookingRequest.Start.AddDays(bookingRequest.Nights))
+                        || (booking.Start > bookingRequest.Start && booking.Start.AddDays(booking.Nights) < bookingRequest.Start.AddDays(bookingRequest.Nights)))
+                    {
+                        usedUnits++;
+                    }
+                }
+                if (usedUnits >= _rentals[bookingRequest.RentalId].Units)
+                    throw new ApplicationException("Not available");
+            }
         }
     }
 }

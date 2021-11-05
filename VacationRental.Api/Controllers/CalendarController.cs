@@ -28,10 +28,15 @@ namespace VacationRental.Api.Controllers
             if (!_rentals.ContainsKey(rentalId))
                 throw new ApplicationException("Rental not found");
 
-            var result = new CalendarViewModel 
+            return CreateCalendarResponse(rentalId, start, nights);
+        }
+
+        private CalendarViewModel CreateCalendarResponse(int rentalId, DateTime start, int nights)
+        {
+            var resultCalendar = new CalendarViewModel
             {
                 RentalId = rentalId,
-                Dates = new List<CalendarDateViewModel>() 
+                Dates = new List<CalendarDateViewModel>()
             };
             for (var i = 0; i < nights; i++)
             {
@@ -50,10 +55,10 @@ namespace VacationRental.Api.Controllers
                     }
                 }
 
-                result.Dates.Add(date);
+                resultCalendar.Dates.Add(date);
             }
 
-            return result;
+            return resultCalendar;
         }
     }
 }
