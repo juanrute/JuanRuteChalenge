@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using VacationRental.Api.Models;
 
 namespace VacationRental.Api.Domain
@@ -24,6 +25,13 @@ namespace VacationRental.Api.Domain
 
         internal void CheckAvailability(BookingBindingModel bookingRequest, IDictionary<int, BookingViewModel> bookings, int rentalUnits)
         {
+            var usedUnitsBetter = bookings.Where(x => x.Value.RentalId == bookingRequest.RentalId
+                                            && (x.Value.Start <= bookingRequest.Start.Date && x.Value.Start.AddDays(x.Value.Nights) > bookingRequest.Start.Date)
+                                            || (x.Value.Start < bookingRequest.Start.AddDays(bookingRequest.Nights) && x.Value.Start.AddDays(x.Value.Nights) >= bookingRequest.Start.AddDays(bookingRequest.Nights))
+                                            || (x.Value.Start > bookingRequest.Start && x.Value.Start.AddDays(x.Value.Nights) < bookingRequest.Start.AddDays(bookingRequest.Nights))
+                                            ).Sum(book => book.Value.Nights);
+
+
             for (var i = 0; i < bookingRequest.Nights; i++)
             {
                 var usedUnits = 0;
