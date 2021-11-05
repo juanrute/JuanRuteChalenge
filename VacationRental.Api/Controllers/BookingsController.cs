@@ -40,9 +40,8 @@ namespace VacationRental.Api.Controllers
                 throw new ApplicationException("Nigts must be positive");
             if (!_rentals.ContainsKey(bookingRequest.RentalId))
                 throw new ApplicationException("Rental not found");
-
-
-            _bookingDomain.CheckAvailability(bookingRequest, _bookings, _rentals[bookingRequest.RentalId].Units);
+            if (_bookingDomain.CheckAvailability(bookingRequest, _bookings) >= _rentals[bookingRequest.RentalId].Units)
+                throw new ApplicationException("Not available");
 
             return _bookingDomain.CreateNewBooking(bookingRequest, _bookings);
         }

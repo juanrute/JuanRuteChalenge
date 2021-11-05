@@ -23,31 +23,18 @@ namespace VacationRental.Api.Domain
             return key;
         }
 
-        internal void CheckAvailability(BookingBindingModel bookingRequest, IDictionary<int, BookingViewModel> bookings, int rentalUnits)
+        internal int CheckAvailability(BookingBindingModel bookingRequest, IDictionary<int, BookingViewModel> bookings)
         {
-            var usedUnitsBetter = bookings.Where(x => x.Value.RentalId == bookingRequest.RentalId
-                                            && (x.Value.Start <= bookingRequest.Start.Date && x.Value.Start.AddDays(x.Value.Nights) > bookingRequest.Start.Date)
-                                            || (x.Value.Start < bookingRequest.Start.AddDays(bookingRequest.Nights) && x.Value.Start.AddDays(x.Value.Nights) >= bookingRequest.Start.AddDays(bookingRequest.Nights))
-                                            || (x.Value.Start > bookingRequest.Start && x.Value.Start.AddDays(x.Value.Nights) < bookingRequest.Start.AddDays(bookingRequest.Nights))
-                                            ).Sum(book => book.Value.Nights);
+            return bookings.Where(
+                booking => booking.Value.RentalId == bookingRequest.RentalId
+                           && (booking.Value.Start <= bookingRequest.Start.Date 
+                                && booking.Value.Start.AddDays(booking.Value.Nights) > bookingRequest.Start.Date)
+                           || (booking.Value.Start < bookingRequest.Start.AddDays(bookingRequest.Nights) 
+                                && booking.Value.Start.AddDays(booking.Value.Nights) >= bookingRequest.Start.AddDays(bookingRequest.Nights))
+                           || (booking.Value.Start > bookingRequest.Start 
+                                && booking.Value.Start.AddDays(booking.Value.Nights) < bookingRequest.Start.AddDays(bookingRequest.Nights)))
+                .Count();
 
-
-            for (var i = 0; i < bookingRequest.Nights; i++)
-            {
-                var usedUnits = 0;
-                foreach (var booking in bookings.Values)
-                {
-                    if (booking.RentalId == bookingRequest.RentalId
-                        && (booking.Start <= bookingRequest.Start.Date && booking.Start.AddDays(booking.Nights) > bookingRequest.Start.Date)
-                        || (booking.Start < bookingRequest.Start.AddDays(bookingRequest.Nights) && booking.Start.AddDays(booking.Nights) >= bookingRequest.Start.AddDays(bookingRequest.Nights))
-                        || (booking.Start > bookingRequest.Start && booking.Start.AddDays(booking.Nights) < bookingRequest.Start.AddDays(bookingRequest.Nights)))
-                    {
-                        usedUnits++;
-                    }
-                }
-                if (usedUnits >= rentalUnits)
-                    throw new ApplicationException("Not available");
-            }
         }
     }
 }

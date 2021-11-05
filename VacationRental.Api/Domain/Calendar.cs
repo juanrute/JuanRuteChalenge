@@ -16,20 +16,19 @@ namespace VacationRental.Api.Domain
             };
             for (var i = 0; i < nights; i++)
             {
+                var dateTarget = start.Date.AddDays(i);
                 var date = new CalendarDateViewModel
                 {
-                    Date = start.Date.AddDays(i),
-                    Bookings = new List<CalendarBookingViewModel>()
+                    Date = dateTarget,
+                    Bookings = bookings
+                    .Where(
+                        booking => booking.Value.RentalId == rentalId
+                        && booking.Value.Start <= dateTarget 
+                        && booking.Value.Start.AddDays(booking.Value.Nights) > dateTarget)
+                    .Select(
+                        booking => new CalendarBookingViewModel { Id = booking.Value.Id })
+                    .ToList()
                 };
-
-                foreach (var booking in bookings.Values)
-                {
-                    if (booking.RentalId == rentalId
-                        && booking.Start <= date.Date && booking.Start.AddDays(booking.Nights) > date.Date)
-                    {
-                        date.Bookings.Add(new CalendarBookingViewModel { Id = booking.Id });
-                    }
-                }
 
                 resultCalendar.Dates.Add(date);
             }
