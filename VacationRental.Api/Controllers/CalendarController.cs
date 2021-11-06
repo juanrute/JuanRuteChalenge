@@ -12,26 +12,38 @@ namespace VacationRental.Api.Controllers
     {
         private readonly IDictionary<int, RentalViewModel> _rentals;
         private readonly IDictionary<int, BookingViewModel> _bookings;
-        private Calendar _calendarDomain;
+        private readonly ICalendar _calendarDomain;
 
         public CalendarController(
             IDictionary<int, RentalViewModel> rentals,
-            IDictionary<int, BookingViewModel> bookings)
+            IDictionary<int, BookingViewModel> bookings,
+            IDictionary<int, int> assignedUnits,
+            ICalendar calendar)
         {
             _rentals = rentals;
             _bookings = bookings;
-            _calendarDomain = new Calendar();
+            _calendarDomain = calendar;
+            _calendarDomain.AssignedUnits = assignedUnits;
         }
 
         [HttpGet]
         public CalendarViewModel Get(int rentalId, DateTime start, int nights)
         {
-            if (nights < 0)
+            var calendarRequest = new CalendarBindingModel
+            {
+                RentalId = rentalId,
+                Start = start,
+                Nights = nights
+            };
+
+            if (calendarRequest.Nights < 0)
                 throw new ApplicationException("Nights must be positive");
-            if (!_rentals.ContainsKey(rentalId))
+            if (!_rentals.ContainsKey(calendarRequest.RentalId))
                 throw new ApplicationException("Rental not found");
 
-            return _calendarDomain.CreateCalendarResponse(rentalId, start, nights, _bookings, _rentals[rentalId].PreparationTimeInDays);
+            _calendarDomain.PreparationTime = _rentals[calendarRequest.RentalId].PreparationTimeInDays;
+
+            return _calendarDomain.CreateCalendarResponse(calendarRequest, _bookings);
         }
     }
 }

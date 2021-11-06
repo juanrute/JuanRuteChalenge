@@ -5,10 +5,11 @@ using VacationRental.Api.Models;
 
 namespace VacationRental.Api.Domain
 {
-    public class Booking
+    public class Booking : IBooking
     {
-
-        internal ResourceIdViewModel CreateNewBooking(BookingBindingModel bookingRequest, IDictionary<int, BookingViewModel> bookings)
+        public int RentalUnits { get; set; }
+        public int PreparationTime { get; set; }
+        public ResourceIdViewModel CreateNewBooking(BookingBindingModel bookingRequest, IDictionary<int, BookingViewModel> bookings)
         {
             var key = new ResourceIdViewModel { Id = bookings.Keys.Count + 1 };
 
@@ -23,17 +24,17 @@ namespace VacationRental.Api.Domain
             return key;
         }
 
-        internal int CheckAvailability(BookingBindingModel bookingRequest, IDictionary<int, BookingViewModel> bookings, int preparationTime)
+        public bool CheckAvailability(BookingBindingModel bookingRequest, IDictionary<int, BookingViewModel> bookings)
         {
             return bookings.Where(
                 booking => booking.Value.RentalId == bookingRequest.RentalId
                            && (booking.Value.Start <= bookingRequest.Start.Date 
-                                && booking.Value.Start.AddDays(booking.Value.Nights + preparationTime) > bookingRequest.Start.Date)// si hay un booking que coincide con la fecha para la cantidad de noches
-                           || (booking.Value.Start < bookingRequest.Start.AddDays(bookingRequest.Nights) // si el boonking inicio antes de las noches en cuestion
-                                && booking.Value.Start.AddDays(booking.Value.Nights + preparationTime) >= bookingRequest.Start.AddDays(bookingRequest.Nights))// y las noches son mas de la que se quieren ahora
+                                && booking.Value.Start.AddDays(booking.Value.Nights + PreparationTime) > bookingRequest.Start.Date)// If a booking match with date and number of nights
+                           || (booking.Value.Start < bookingRequest.Start.AddDays(bookingRequest.Nights) // If bookings starts before the given nights
+                                && booking.Value.Start.AddDays(booking.Value.Nights + PreparationTime) >= bookingRequest.Start.AddDays(bookingRequest.Nights))// If nights are higgers than the requested
                            || (booking.Value.Start > bookingRequest.Start 
-                                && booking.Value.Start.AddDays(booking.Value.Nights + preparationTime) < bookingRequest.Start.AddDays(bookingRequest.Nights)))// la fecha de booking es despues de la nueva fecha pero las noches coinciden
-                .Count();
+                                && booking.Value.Start.AddDays(booking.Value.Nights + PreparationTime) < bookingRequest.Start.AddDays(bookingRequest.Nights)))// The booked days are after the requested but the nights match
+                .Count() >= RentalUnits;
 
         }
     }

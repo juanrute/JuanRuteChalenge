@@ -12,15 +12,16 @@ namespace VacationRental.Api.Controllers
     {
         private readonly IDictionary<int, RentalViewModel> _rentals;
         private readonly IDictionary<int, BookingViewModel> _bookings;
-        private Booking _bookingDomain;
+        private IBooking _bookingDomain;
 
         public BookingsController(
             IDictionary<int, RentalViewModel> rentals,
-            IDictionary<int, BookingViewModel> bookings)
+            IDictionary<int, BookingViewModel> bookings,
+            IBooking bookingDomain)
         {
             _rentals = rentals;
             _bookings = bookings;
-            _bookingDomain = new Booking();
+            _bookingDomain = bookingDomain;
         }
 
         [HttpGet]
@@ -40,10 +41,13 @@ namespace VacationRental.Api.Controllers
                 throw new ApplicationException("Nigts must be positive");
             if (!_rentals.ContainsKey(bookingRequest.RentalId))
                 throw new ApplicationException("Rental not found");
-            if (_bookingDomain.CheckAvailability(bookingRequest, _bookings, _rentals[bookingRequest.RentalId].PreparationTimeInDays) >= _rentals[bookingRequest.RentalId].Units)
+
+            _bookingDomain.RentalUnits = _rentals[bookingRequest.RentalId].Units;
+            if(_bookingDomain.CheckAvailability(bookingRequest, _bookings))
                 throw new ApplicationException("Not available");
 
-            return _bookingDomain.CreateNewBooking(bookingRequest, _bookings);
+            _bookingDomain.PreparationTime = _rentals[bookingRequest.RentalId].PreparationTimeInDays;
+            return _bookingDomain.CreateNewBooking(bookingRequest,_bookings);
         }
     }
 }

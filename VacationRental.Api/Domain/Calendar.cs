@@ -5,58 +5,44 @@ using VacationRental.Api.Models;
 
 namespace VacationRental.Api.Domain
 {
-    public class Calendar
+    public class Calendar : ICalendar
     {
-        IDictionary<int, int> _assignedUnits = new Dictionary<int, int>();
-        internal CalendarViewModel CreateCalendarResponse(int rentalId, DateTime start, int nights, IDictionary<int, BookingViewModel> bookings, int preparationTime)
+        public int PreparationTime { get; set; }
+        public IDictionary<int, int> AssignedUnits { get; set; }
+        public CalendarViewModel CreateCalendarResponse(CalendarBindingModel calendarRequest, IDictionary<int, BookingViewModel> Bookings)
         {
             var resultCalendar = new CalendarViewModel
             {
-                RentalId = rentalId,
+                RentalId = calendarRequest.RentalId,
                 Dates = new List<CalendarDateViewModel>()
             };
             int assignedUnit = 1;
-            for (var i = 0; i < nights ; i++)
+            for (var i = 0; i < calendarRequest.Nights; i++)
             {
-                var dateTarget = start.Date.AddDays(i);
+                var dateTarget = calendarRequest.Start.Date.AddDays(i);
                 var date = new CalendarDateViewModel
                 {
                     Date = dateTarget,
-                    Bookings = bookings
+                    Bookings = Bookings
                         .Where(
-                            booking => booking.Value.RentalId == rentalId
+                            booking => booking.Value.RentalId == calendarRequest.RentalId
                             && booking.Value.Start <= dateTarget 
                             && booking.Value.Start.AddDays(booking.Value.Nights) > dateTarget)
                         .Select(
                             booking => {
-                                int value;
-                                if(!_assignedUnits.TryGetValue(booking.Value.Id, out value)) {
-                                    value = assignedUnit++;
-                                    if (value > preparationTime)
-                                        value = 1;
-                                    _assignedUnits.Add(booking.Value.Id, value);
-                                }
-
+                                int value = AssignUnit(PreparationTime, booking, ref assignedUnit);
                                 return new CalendarBookingViewModel { Id = booking.Value.Id, Unit = value };
                         })
                         .ToList(),
-                    PreparationTimes = bookings
+                    PreparationTimes = Bookings
                         .Where(
-                            booking => booking.Value.RentalId == rentalId
+                            booking => booking.Value.RentalId == calendarRequest.RentalId
                             && booking.Value.Start.AddDays(booking.Value.Nights) <= dateTarget
-                            && booking.Value.Start.AddDays(booking.Value.Nights + preparationTime) > dateTarget
+                            && booking.Value.Start.AddDays(booking.Value.Nights + PreparationTime) > dateTarget
                             )
                         .Select(
                             booking => {
-                                int value;
-                                if (!_assignedUnits.TryGetValue(booking.Value.Id, out value))
-                                {
-                                    value = assignedUnit++;
-                                    if (value > preparationTime)
-                                        value = 1;
-                                    _assignedUnits.Add(booking.Value.Id, value);
-                                }
-
+                                int value = AssignUnit(PreparationTime, booking, ref assignedUnit);
                                 return new CalendarPreparationViewModel { Unit = value };
                             })
                         .ToList()
@@ -66,6 +52,19 @@ namespace VacationRental.Api.Domain
             }
 
             return resultCalendar;
+        }
+
+        private int AssignUnit(int preparationTime, KeyValuePair<int, BookingViewModel> booking, ref int assignedUnit)
+        {
+            if (!AssignedUnits.TryGetValue(booking.Value.Id, out int value))
+            {
+                value = assignedUnit++;
+                if (value > preparationTime)
+                    value = 1;
+                AssignedUnits.Add(booking.Value.Id, value);
+            }
+
+            return value;
         }
     }
 }
