@@ -26,7 +26,8 @@ namespace VacationRental.Api.Controllers
 
         [HttpGet]
         [Route("{bookingId:int}")]
-        public BookingViewModel Get(int bookingId)
+        public BookingViewModel Get(
+            int bookingId)
         {
             if (!_bookings.ContainsKey(bookingId))
                 throw new ApplicationException("Booking not found");
@@ -35,7 +36,8 @@ namespace VacationRental.Api.Controllers
         }
 
         [HttpPost]
-        public ResourceIdViewModel Post(BookingBindingModel bookingRequest)
+        public ResourceIdViewModel Post(
+            BookingBindingModel bookingRequest)
         {
             if (bookingRequest.Nights <= 0)
                 throw new ApplicationException("Nigts must be positive");

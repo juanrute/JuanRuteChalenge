@@ -9,7 +9,9 @@ namespace VacationRental.Api.Domain
     {
         public int PreparationTime { get; set; }
         public IDictionary<int, int> AssignedUnits { get; set; }
-        public CalendarViewModel CreateCalendarResponse(CalendarBindingModel calendarRequest, IDictionary<int, BookingViewModel> Bookings)
+        public CalendarViewModel CreateCalendarResponse(
+            CalendarBindingModel calendarRequest, 
+            IDictionary<int, BookingViewModel> Bookings)
         {
             var resultCalendar = new CalendarViewModel
             {
@@ -54,7 +56,10 @@ namespace VacationRental.Api.Domain
             return resultCalendar;
         }
 
-        private int AssignUnit(int preparationTime, KeyValuePair<int, BookingViewModel> booking, ref int assignedUnit)
+        private int AssignUnit(
+            int preparationTime, 
+            KeyValuePair<int, BookingViewModel> booking, 
+            ref int assignedUnit)
         {
             if (!AssignedUnits.TryGetValue(booking.Value.Id, out int value))
             {

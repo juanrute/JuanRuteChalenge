@@ -9,7 +9,9 @@ namespace VacationRental.Api.Domain
     {
         public int RentalUnits { get; set; }
         public int PreparationTime { get; set; }
-        public ResourceIdViewModel CreateNewBooking(BookingBindingModel bookingRequest, IDictionary<int, BookingViewModel> bookings)
+        public ResourceIdViewModel CreateNewBooking(
+            BookingBindingModel bookingRequest, 
+            IDictionary<int, BookingViewModel> bookings)
         {
             var key = new ResourceIdViewModel { Id = bookings.Keys.Count + 1 };
 
@@ -24,7 +26,9 @@ namespace VacationRental.Api.Domain
             return key;
         }
 
-        public bool CheckAvailability(BookingBindingModel bookingRequest, IDictionary<int, BookingViewModel> bookings)
+        public bool CheckAvailability(
+            BookingBindingModel bookingRequest, 
+            IDictionary<int, BookingViewModel> bookings)
         {
             return bookings.Where(
                 booking => booking.Value.RentalId == bookingRequest.RentalId

@@ -27,7 +27,9 @@ namespace VacationRental.Api.Controllers
         }
 
         [HttpGet]
-        public CalendarViewModel Get(int rentalId, DateTime start, int nights)
+        public CalendarViewModel Get(
+            int rentalId, DateTime start, 
+            int nights)
         {
             var calendarRequest = new CalendarBindingModel
             {
