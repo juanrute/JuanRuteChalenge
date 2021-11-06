@@ -31,7 +31,7 @@ namespace VacationRental.Api.Controllers
             if (!_rentals.ContainsKey(rentalId))
                 throw new ApplicationException("Rental not found");
 
-            return _calendarDomain.CreateCalendarResponse(rentalId, start, nights, _bookings);
+            return _calendarDomain.CreateCalendarResponse(rentalId, start, nights, _bookings, _rentals[rentalId].PreparationTimeInDays);
         }
     }
 }

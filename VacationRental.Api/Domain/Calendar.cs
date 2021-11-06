@@ -7,14 +7,16 @@ namespace VacationRental.Api.Domain
 {
     public class Calendar
     {
-        internal CalendarViewModel CreateCalendarResponse(int rentalId, DateTime start, int nights, IDictionary<int, BookingViewModel> bookings)
+        private IDictionary<int, int> _assignedUnits = new Dictionary<int, int>();
+        internal CalendarViewModel CreateCalendarResponse(int rentalId, DateTime start, int nights, IDictionary<int, BookingViewModel> bookings, int preparationTime)
         {
             var resultCalendar = new CalendarViewModel
             {
                 RentalId = rentalId,
                 Dates = new List<CalendarDateViewModel>()
             };
-            for (var i = 0; i < nights; i++)
+            int assignedUnit = 1;
+            for (var i = 0; i < nights + preparationTime; i++)
             {
                 var dateTarget = start.Date.AddDays(i);
                 var date = new CalendarDateViewModel
@@ -26,10 +28,19 @@ namespace VacationRental.Api.Domain
                         && booking.Value.Start <= dateTarget 
                         && booking.Value.Start.AddDays(booking.Value.Nights) > dateTarget)
                     .Select(
-                        booking => new CalendarBookingViewModel { Id = booking.Value.Id })
-                    .ToList()
-                };
+                        booking => {
+                            int value;
+                            if(!_assignedUnits.TryGetValue(booking.Value.Id, out value)) {
+                                value = assignedUnit++;
+                                _assignedUnits.Add(booking.Value.Id, value);
+                            }
 
+                            return new CalendarBookingViewModel { Id = booking.Value.Id, Unit = value };
+                    })
+                    .ToList(),
+                    PreparationTimes = new List<CalendarPreparationViewModel>()
+                };
+                
                 resultCalendar.Dates.Add(date);
             }
 
