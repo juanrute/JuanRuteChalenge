@@ -23,16 +23,16 @@ namespace VacationRental.Api.Domain
             return key;
         }
 
-        internal int CheckAvailability(BookingBindingModel bookingRequest, IDictionary<int, BookingViewModel> bookings)
+        internal int CheckAvailability(BookingBindingModel bookingRequest, IDictionary<int, BookingViewModel> bookings, int preparationTime)
         {
             return bookings.Where(
                 booking => booking.Value.RentalId == bookingRequest.RentalId
                            && (booking.Value.Start <= bookingRequest.Start.Date 
-                                && booking.Value.Start.AddDays(booking.Value.Nights) > bookingRequest.Start.Date)// si hay un booking que coincide con la fecha para la cantidad de noches
+                                && booking.Value.Start.AddDays(booking.Value.Nights + preparationTime) > bookingRequest.Start.Date)// si hay un booking que coincide con la fecha para la cantidad de noches
                            || (booking.Value.Start < bookingRequest.Start.AddDays(bookingRequest.Nights) // si el boonking inicio antes de las noches en cuestion
-                                && booking.Value.Start.AddDays(booking.Value.Nights) >= bookingRequest.Start.AddDays(bookingRequest.Nights))// y las noches son mas de la que se quieren ahora
+                                && booking.Value.Start.AddDays(booking.Value.Nights + preparationTime) >= bookingRequest.Start.AddDays(bookingRequest.Nights))// y las noches son mas de la que se quieren ahora
                            || (booking.Value.Start > bookingRequest.Start 
-                                && booking.Value.Start.AddDays(booking.Value.Nights) < bookingRequest.Start.AddDays(bookingRequest.Nights)))// la fecha de booking es despues de la nueva fecha pero las noches coinciden
+                                && booking.Value.Start.AddDays(booking.Value.Nights + preparationTime) < bookingRequest.Start.AddDays(bookingRequest.Nights)))// la fecha de booking es despues de la nueva fecha pero las noches coinciden
                 .Count();
 
         }
