@@ -7,7 +7,7 @@ using Xunit;
 
 namespace VacationRental.Api.Tests
 {
-    [Collection("Integration")]
+    [Collection("Integration")] 
     public class PostBookingTests
     {
         private readonly HttpClient _client;

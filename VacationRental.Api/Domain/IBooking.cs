@@ -10,7 +10,7 @@ namespace VacationRental.Api.Domain
     {
         int RentalUnits { get; set; }
         int PreparationTime { get; set; }
-        bool CheckAvailability(BookingBindingModel bookingRequest, IDictionary<int, BookingViewModel> Bookings);
+        bool CheckUnavailability(BookingBindingModel bookingRequest, IDictionary<int, BookingViewModel> Bookings);
         ResourceIdViewModel CreateNewBooking(BookingBindingModel bookingRequest, IDictionary<int, BookingViewModel> bookings);
     }
 }

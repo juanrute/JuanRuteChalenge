@@ -26,7 +26,7 @@ namespace VacationRental.Api.Domain
             return key;
         }
 
-        public bool CheckAvailability(
+        public bool CheckUnavailability(
             BookingBindingModel bookingRequest, 
             IDictionary<int, BookingViewModel> bookings)
         {

@@ -45,10 +45,10 @@ namespace VacationRental.Api.Controllers
                 throw new ApplicationException("Rental not found");
 
             _bookingDomain.RentalUnits = _rentals[bookingRequest.RentalId].Units;
-            if(_bookingDomain.CheckAvailability(bookingRequest, _bookings))
+            _bookingDomain.PreparationTime = _rentals[bookingRequest.RentalId].PreparationTimeInDays;
+            if (_bookingDomain.CheckUnavailability(bookingRequest, _bookings))
                 throw new ApplicationException("Not available");
 
-            _bookingDomain.PreparationTime = _rentals[bookingRequest.RentalId].PreparationTimeInDays;
             return _bookingDomain.CreateNewBooking(bookingRequest,_bookings);
         }
     }

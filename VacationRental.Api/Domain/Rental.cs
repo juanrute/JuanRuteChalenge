@@ -15,7 +15,7 @@ namespace VacationRental.Api.Domain
             RentalViewModel rental, 
             IDictionary<int, BookingViewModel> Bookings)
         {
-            //TODO: Validate if with the changes it will overlap between existing bookings 
+            //TODO: Validate if with the requested change will overlap between existing bookings 
             if (Bookings.Where(booking => booking.Value.RentalId == RentalId).Count() <= 1)
             {
                 return true;

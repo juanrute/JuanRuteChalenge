@@ -19,6 +19,12 @@ namespace VacationRental.Api.Domain
                 RentalId = calendarRequest.RentalId,
                 Dates = new List<CalendarDateViewModel>()
             };
+            AddDatesToResponse(calendarRequest, Bookings, resultCalendar);
+            return resultCalendar;
+        }
+
+        private void AddDatesToResponse(CalendarBindingModel calendarRequest, IDictionary<int, BookingViewModel> Bookings, CalendarViewModel resultCalendar)
+        {
             int assignedUnit = 1;
             for (var indexNight = 0; indexNight < calendarRequest.Nights; indexNight++)
             {
@@ -29,15 +35,17 @@ namespace VacationRental.Api.Domain
                     Bookings = Bookings
                         .Where(
                             booking => booking.Value.RentalId == calendarRequest.RentalId
-                            && booking.Value.Start <= dateTarget 
+                            && booking.Value.Start <= dateTarget
                             && booking.Value.Start.AddDays(booking.Value.Nights) > dateTarget)
                         .Select(
-                            booking => {
-                                return new CalendarBookingViewModel { 
-                                    Id = booking.Value.Id, 
-                                    Unit = AssignUnitInOrder(booking, ref assignedUnit) 
+                            booking =>
+                            {
+                                return new CalendarBookingViewModel
+                                {
+                                    Id = booking.Value.Id,
+                                    Unit = AssignUnitInOrder(booking, ref assignedUnit)
                                 };
-                        })
+                            })
                         .ToList(),
                     PreparationTimes = Bookings
                         .Where(
@@ -46,18 +54,18 @@ namespace VacationRental.Api.Domain
                             && booking.Value.Start.AddDays(booking.Value.Nights + PreparationTime) > dateTarget
                             )
                         .Select(
-                            booking => {
-                                return new CalendarPreparationViewModel { 
-                                    Unit = AssignUnitInOrder(booking, ref assignedUnit) 
+                            booking =>
+                            {
+                                return new CalendarPreparationViewModel
+                                {
+                                    Unit = AssignUnitInOrder(booking, ref assignedUnit)
                                 };
                             })
                         .ToList()
                 };
-                
+
                 resultCalendar.Dates.Add(date);
             }
-
-            return resultCalendar;
         }
 
         private int AssignUnitInOrder(KeyValuePair<int, BookingViewModel> booking, ref int assignedUnit)
